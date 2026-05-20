@@ -201,8 +201,7 @@ Sen tam yetkilisin. Şunları yapabilirsin:
 - TypeScript
 - Tailwind CSS
 - MDX (`@next/mdx`)
-- Statik export (`output: 'export'`)
-- Cloudflare Pages deployment
+- Vercel deployment (GitHub bağlantılı, `main`'e push'la otomatik deploy)
 
 ### 8.2 Performans Kuralları
 

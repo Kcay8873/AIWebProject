@@ -29,11 +29,11 @@ Lemma PR'ı kontrol eder (kaynaklar, olgular, üslup, telif)
 
 ## Stack
 
-- **Framework:** Next.js 15 (App Router, statik export)
+- **Framework:** Next.js 15 (App Router)
 - **Dil:** TypeScript
 - **Stil:** Tailwind CSS
 - **İçerik:** MDX
-- **Hosting:** Cloudflare Pages
+- **Hosting:** Vercel (GitHub bağlantılı, `main`'e push'la otomatik deploy)
 - **Otomasyon:** GitHub Actions
 
 ## Klasör Yapısı
@@ -80,12 +80,22 @@ npm run dev
 
 Site http://localhost:3000 adresinde çalışır.
 
-Build ve statik export:
+Production build:
 
 ```bash
 npm run build
-# çıktı: out/ klasöründe statik HTML
+npm run start
 ```
+
+### Vercel Deploy
+
+1. [vercel.com](https://vercel.com) → **Add New → Project**
+2. GitHub'dan `Kcay8873/AIWebProject` reposunu import et
+3. Framework otomatik algılanır (Next.js)
+4. Environment variable ekle: `NEXT_PUBLIC_SITE_URL=https://<proje-adı>.vercel.app`
+5. **Deploy**
+
+`main` branch'e her push otomatik production deploy, PR'lar preview deploy alır.
 
 ## Lisans
 

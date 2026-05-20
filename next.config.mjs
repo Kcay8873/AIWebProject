@@ -10,12 +10,10 @@ const withMDX = createMDX({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
   pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'md', 'mdx'],
   images: {
-    unoptimized: true,
+    formats: ['image/avif', 'image/webp'],
   },
-  trailingSlash: true,
 }
 
 export default withMDX(nextConfig)
