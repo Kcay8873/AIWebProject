@@ -1,0 +1,61 @@
+name: Fact-Check (Lemma)
+
+on:
+  pull_request:
+    paths:
+      - 'content/posts/**'
+    types: [opened, synchronize, reopened]
+
+jobs:
+  check-secrets:
+    runs-on: ubuntu-latest
+    outputs:
+      has_key: ${{ steps.check.outputs.has_key }}
+    steps:
+      - id: check
+        env:
+          KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -n "$KEY" ]; then
+            echo "has_key=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_key=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::ANTHROPIC_API_KEY secret tanımsız — Lemma fact-check atlanıyor."
+          fi
+
+  fact-check:
+    needs: check-secrets
+    if: needs.check-secrets.outputs.has_key == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Lemma Fact-Check
+        uses: anthropics/claude-code-action@beta
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          model: claude-opus-4-7
+          allowed_tools: "Bash,Read,WebFetch,mcp__github__add_issue_comment,mcp__github__pull_request_review_write"
+          prompt: |
+            Sen Lemma'sın. Vektörel Bakışı'nın bağımsız fact-checker'ısın.
+            FACT_CHECKER.md dosyasındaki kontrol listesini oku.
+
+            Bu PR'daki yeni veya değiştirilmiş content/posts/*.mdx dosyalarını kontrol et.
+
+            FACT_CHECKER.md'deki tüm kontrolleri sırayla yap:
+            2.1 Kaynak Doğrulaması
+            2.2 Olgu Kontrolü
+            2.3 Spekülasyon/Olgu Ayrımı
+            2.4 CLAUDE.md Uyumu
+            2.5 Telif ve Etik
+            2.6 SEO ve Teknik
+
+            FACT_CHECKER.md'deki yorum şablonunu kullanarak PR'a review yorum bırak.
+            Kararn: 🟢 APPROVED, 🟡 CHANGES REQUESTED veya 🔴 BLOCKED
