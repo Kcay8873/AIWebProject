@@ -1,3 +1,5 @@
+export const dynamic = 'force-static'
+
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://vektorelbakisi.com'
 
 export async function GET() {
