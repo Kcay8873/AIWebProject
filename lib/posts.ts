@@ -1,43 +1,75 @@
 import fs from 'fs'
 import path from 'path'
 import matter from 'gray-matter'
+import { remark } from 'remark'
+import remarkGfm from 'remark-gfm'
+import remarkHtml from 'remark-html'
 import type { Post, PostFrontmatter } from '@/types/post'
 
 const POSTS_DIR = path.join(process.cwd(), 'content/posts')
 
-export function getAllPostFiles(): string[] {
+function getAllPostFiles(): string[] {
   if (!fs.existsSync(POSTS_DIR)) return []
   return fs
     .readdirSync(POSTS_DIR)
     .filter((f) => f.endsWith('.mdx') || f.endsWith('.md'))
 }
 
-export function getPostBySlug(slug: string): Post | null {
-  const files = getAllPostFiles()
-  const file = files.find((f) => f.includes(slug))
-  if (!file) return null
+async function markdownToHtml(content: string): Promise<string> {
+  const result = await remark()
+    .use(remarkGfm)
+    .use(remarkHtml, { sanitize: false })
+    .process(content)
+  return String(result)
+}
 
+function parsePostFile(file: string): {
+  frontmatter: PostFrontmatter
+  content: string
+  filePath: string
+} {
   const filePath = path.join(POSTS_DIR, file)
   const raw = fs.readFileSync(filePath, 'utf-8')
   const { data, content } = matter(raw)
-  const fm = data as PostFrontmatter
+  return {
+    frontmatter: data as PostFrontmatter,
+    content,
+    filePath,
+  }
+}
 
+function readingTimeMinutes(content: string): number {
   const words = content.split(/\s+/).length
-  const readingTime = Math.ceil(words / 200)
+  return Math.max(1, Math.ceil(words / 200))
+}
 
-  return { ...fm, content, readingTime, filePath }
+export async function getPostBySlug(slug: string): Promise<Post | null> {
+  const files = getAllPostFiles()
+  for (const file of files) {
+    const parsed = parsePostFile(file)
+    if (parsed.frontmatter.slug === slug) {
+      const html = await markdownToHtml(parsed.content)
+      return {
+        ...parsed.frontmatter,
+        content: html,
+        readingTime: readingTimeMinutes(parsed.content),
+        filePath: parsed.filePath,
+      }
+    }
+  }
+  return null
 }
 
 export function getAllPosts(): Post[] {
   return getAllPostFiles()
     .map((file) => {
-      const filePath = path.join(POSTS_DIR, file)
-      const raw = fs.readFileSync(filePath, 'utf-8')
-      const { data, content } = matter(raw)
-      const fm = data as PostFrontmatter
-      const words = content.split(/\s+/).length
-      const readingTime = Math.ceil(words / 200)
-      return { ...fm, content, readingTime, filePath }
+      const parsed = parsePostFile(file)
+      return {
+        ...parsed.frontmatter,
+        content: parsed.content,
+        readingTime: readingTimeMinutes(parsed.content),
+        filePath: parsed.filePath,
+      }
     })
     .filter((p) => p.status === 'published')
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
