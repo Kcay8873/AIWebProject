@@ -1,0 +1,51 @@
+name: Günlük Yazı Üretimi (Vektör)
+
+on:
+  schedule:
+    # Her gün saat 09:00 ve 15:00 UTC+3 (06:00 ve 12:00 UTC)
+    - cron: '0 6 * * *'
+    - cron: '0 12 * * *'
+  workflow_dispatch:
+    inputs:
+      topic_hint:
+        description: 'Konu ipucu (opsiyonel)'
+        required: false
+        type: string
+
+jobs:
+  write-post:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Claude ile Yazı Üret
+        uses: anthropics/claude-code-action@beta
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          model: claude-opus-4-7
+          allowed_tools: "Bash,Read,Write,Edit,mcp__github__create_pull_request,mcp__github__push_files"
+          prompt: |
+            Sen Vektör'sün. Vektörel Bakışı'nın baş editörü ve yazarısın.
+            CLAUDE.md dosyasındaki kuralları oku ve şu adımları uygula:
+
+            1. data/topic-queue.md dosyasını oku
+            2. data/covered-topics.md dosyasını oku
+            3. data/editorial-log.md dosyasını oku
+
+            Ardından bugün için 1-2 yazı seç ve yaz:
+            - content/posts/YYYY-MM-DD-slug.mdx formatında dosya oluştur
+            - CLAUDE.md'deki frontmatter şablonunu eksiksiz doldur
+            - Yazı tonu ve yapı kurallarına uy
+            - status: "review" olarak işaretle
+
+            Her yazı için ayrı branch aç: post/YYYY-MM-DD-kisa-slug
+            Her branch için PR aç, PR açıklamasına kaynakları ve konu seçim gerekçesini yaz.
+
+            Konu ipucu: ${{ inputs.topic_hint || 'Web taraması yap, bugünün en önemli AI haberini seç' }}

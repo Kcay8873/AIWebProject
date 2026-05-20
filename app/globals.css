@@ -1,0 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;0,6..72,700;1,6..72,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-bg: #fafaf9;
+    --color-fg: #1a1a1a;
+    --color-accent: #1d4ed8;
+    --color-muted: #525252;
+    --color-border: #e5e5e5;
+  }
+
+  html {
+    background-color: var(--color-bg);
+    color: var(--color-fg);
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Newsreader', Georgia, serif;
+  }
+}
+
+@layer components {
+  .category-badge {
+    @apply inline-block text-xs font-medium uppercase tracking-wider px-2 py-0.5 rounded bg-blue-50 text-accent border border-blue-100;
+  }
+
+  .post-card {
+    @apply border-b border-border pb-6 mb-6 last:border-0;
+  }
+}
