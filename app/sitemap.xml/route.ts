@@ -1,5 +1,7 @@
 import { generateSitemap } from '@/lib/sitemap'
 
+export const dynamic = 'force-static'
+
 export async function GET() {
   const sitemap = generateSitemap()
   return new Response(sitemap, {
